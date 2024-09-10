@@ -4,12 +4,14 @@ const { CloudWatchLogsClient, DescribeLogStreamsCommand, CreateLogStreamCommand,
 const app = express();
 const port = 3000;
 
+// Create AWS SDK clients
 const snsClient = new SNSClient({ region: 'ap-south-1' });
 const cloudWatchLogsClient = new CloudWatchLogsClient({ region: 'ap-south-1' });
 
 const logGroupName = 'HelloWorldLogGroup';
 const logStreamName = 'HelloWorldLogStream';
 
+// Serve static files from the 'public' directory
 app.use(express.static('public'));
 
 // Route to handle button click
@@ -31,29 +33,36 @@ app.post('/notify', async (req, res) => {
   }
 });
 
+// Route for root path
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
 // Function to log messages to CloudWatch
 async function logToCloudWatch(message) {
-  const params = {
-    logGroupName,
-    logStreamName,
-    logEvents: [
-      {
-        message,
-        timestamp: new Date().getTime(),
-      },
-    ],
-  };
-
   try {
+    // Describe log streams
     const describeLogStreamsCommand = new DescribeLogStreamsCommand({ logGroupName });
     const data = await cloudWatchLogsClient.send(describeLogStreamsCommand);
 
+    // Check if log stream exists, if not create it
     const logStreamExists = data.logStreams.some((stream) => stream.logStreamName === logStreamName);
-
     if (!logStreamExists) {
       const createLogStreamCommand = new CreateLogStreamCommand({ logGroupName, logStreamName });
       await cloudWatchLogsClient.send(createLogStreamCommand);
     }
+
+    // Put log events
+    const params = {
+      logGroupName,
+      logStreamName,
+      logEvents: [
+        {
+          message,
+          timestamp: new Date().getTime(),
+        },
+      ],
+    };
 
     const putLogEventsCommand = new PutLogEventsCommand(params);
     await cloudWatchLogsClient.send(putLogEventsCommand);

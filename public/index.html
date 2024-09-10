@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notification App</title>
+    <title>Send SNS Notification</title>
 </head>
 <body>
-    <h1>Send Notification</h1>
-    <button id="notifyBtn">Send Status Notification</button>
+    <h1>Send SNS Notification</h1>
+    <button id="notifyButton">Send Notification</button>
 
     <script>
-        document.getElementById('notifyBtn').addEventListener('click', () => {
-            fetch('/notify', { method: 'POST' })
-                .then(response => response.text())
-                .then(data => alert(data))
-                .catch(error => console.error('Error:', error));
+        document.getElementById('notifyButton').addEventListener('click', () => {
+            fetch('/notify', {
+                method: 'POST'
+            })
+            .then(response => response.text())
+            .then(data => alert(data))
+            .catch(error => console.error('Error:', error));
         });
     </script>
 </body>
